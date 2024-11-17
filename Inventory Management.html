@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 15px;
+      background-color: #28a745;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #218838;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f4f4f4;
+    }
+
+    .delete-btn {
+      background-color: #dc3545;
+    }
+
+    .delete-btn:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Inventory Management System</h1>
+  </header>
+  <div class="container">
+    <h2>Add Inventory Item</h2>
+    <form id="inventoryForm">
+      <div class="form-group">
+        <label for="itemName">Item Name:</label>
+        <input type="text" id="itemName" placeholder="Enter item name" required>
+      </div>
+      <div class="form-group">
+        <label for="itemQuantity">Quantity:</label>
+        <input type="number" id="itemQuantity" placeholder="Enter quantity" required>
+      </div>
+      <div class="form-group">
+        <label for="itemPrice">Price:</label>
+        <input type="number" id="itemPrice" placeholder="Enter price" step="0.01" required>
+      </div>
+      <button type="submit" class="btn">Add Item</button>
+    </form>
+    <h2>Inventory List</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Item Name</th>
+          <th>Quantity</th>
+          <th>Price</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="inventoryTableBody">
+        <!-- Items will be dynamically added here -->
+      </tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    // Firebase configuration
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDaf0QLH9JtjSet77CnmhlGDWbzY9otKcA",
+      authDomain: "inventory-management-sys-a05d5.firebaseapp.com",
+      databaseURL: "https://inventory-management-sys-a05d5-default-rtdb.firebaseio.com",
+      projectId: "inventory-management-sys-a05d5",
+      storageBucket: "inventory-management-sys-a05d5.firebasestorage.app",
+      messagingSenderId: "1020579992601",
+      appId: "1:1020579992601:web:ccf645d5fe2af2924c0688",
+      measurementId: "G-MCRB5904L5"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // Reference to the inventory database node
+    const inventoryRef = ref(database, 'inventory');
+
+    // Add inventory item
+    document.getElementById('inventoryForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const itemName = document.getElementById('itemName').value.trim();
+      const itemQuantity = document.getElementById('itemQuantity').value.trim();
+      const itemPrice = document.getElementById('itemPrice').value.trim();
+
+      if (itemName && itemQuantity && itemPrice) {
+        push(inventoryRef, {
+          name: itemName,
+          quantity: itemQuantity,
+          price: itemPrice
+        });
+        document.getElementById('inventoryForm').reset();
+      }
+    });
+
+    // Fetch and display inventory items
+    onValue(inventoryRef, (snapshot) => {
+      const inventoryTableBody = document.getElementById('inventoryTableBody');
+      inventoryTableBody.innerHTML = '';
+      const inventoryItems = snapshot.val();
+
+      if (inventoryItems) {
+        Object.keys(inventoryItems).forEach((key) => {
+          const item = inventoryItems[key];
+          const row = document.createElement('tr');
+
+          row.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.quantity}</td>
+            <td>$${parseFloat(item.price).toFixed(2)}</td>
+            <td><button class="btn delete-btn" data-key="${key}">Delete</button></td>
+          `;
+          inventoryTableBody.appendChild(row);
+        });
+      }
+    });
+
+    // Delete inventory item
+    document.getElementById('inventoryTableBody').addEventListener('click', (e) => {
+      if (e.target.classList.contains('delete-btn')) {
+        const key = e.target.getAttribute('data-key');
+        remove(ref(database, `inventory/${key}`));
+      }
+    });
+  </script>
+</body>
+</html>
