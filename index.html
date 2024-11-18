@@ -92,8 +92,23 @@
 <body>
     <header>
         <h1>Inventory Management System</h1>
+        <a href="https://app.netlify.com/sites/inventorybsc006/deploys">
+            <img src="https://api.netlify.com/api/v1/badges/6e5d115e-5aff-413b-b4f1-d954f7dc8820/deploy-status" alt="Netlify Status" />
+        </a>
     </header>
+    
     <main>
+        <section class="description-section">
+            <h2>Project Description</h2>
+            <p>
+                This Inventory Management System allows users to manage their inventory effectively. 
+                Users can add items with their names, quantities, and prices. The system calculates the total 
+                cost for each item based on the quantity and price. Users can also view the list of items in 
+                the inventory and remove items as needed. This application is built using HTML, CSS, and JavaScript, 
+                making it a simple yet functional tool for inventory management.
+            </p>
+        </section>
+
         <section class="form-section">
             <h2>Add Item</h2>
             <form id="inventory-form">
@@ -108,7 +123,7 @@
 
                 <button type="submit">Add to Inventory</button>
             </form>
-            <a href="home.html" class="home-button">Back to Home</a> <!-- New button added here -->
+            <a href="home.html" class="home-button">Back to Home</a>
         </section>
 
         <section class="inventory-section">
@@ -123,13 +138,65 @@
                         <th>Total</th>
                         <th>Actions</th>
                     </tr>
-                </thead>
+                 </thead>
                 <tbody id="inventory-list">
                     <!-- Inventory items will be displayed here -->
                 </tbody>
             </table>
         </section>
     </main>
-    <script src="script.js"></script>
+    <script>
+        // Elements
+        const inventoryForm = document.getElementById('inventory-form');
+        const inventoryList = document.getElementById('inventory-list');
+
+        // Inventory array to hold items
+        let inventory = [];
+
+        // Add item to inventory
+        inventoryForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const itemName = document.getElementById('item-name').value;
+            const itemQuantity = document.getElementById('item-quantity').value;
+            const itemPrice = document.getElementById('item-price').value;
+
+            const itemTotal = itemQuantity * itemPrice;
+
+            const newItem = {
+                name: itemName,
+                quantity: itemQuantity,
+                price: itemPrice,
+                total: itemTotal
+            };
+
+            inventory.push(newItem);
+            displayInventory();
+            inventoryForm.reset();
+        });
+
+        // Display inventory items
+        function displayInventory() {
+            inventoryList.innerHTML = '';
+            inventory.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.price}</td>
+                    <td>${item.total}</td>
+                    <td><button onclick="removeItem(${index})">Remove</button></td>
+                `;
+                inventoryList.appendChild(row);
+            });
+        }
+
+        // Remove item from inventory
+        function removeItem(index) {
+            inventory.splice(index, 1);
+            displayInventory();
+        }
+    </script>
 </body>
 </html>
